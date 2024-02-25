@@ -13,36 +13,40 @@ class _RegistrationPageState extends State<RegistrationPage> {
   TextEditingController phoneController = TextEditingController();
   bool isloading = false;
 
-  Future<void> loginWithOTP() async {
-     setState(() {
+Future<void> loginWithOTP() async {
+  // Validate the phone number first
+  if (phoneController.text.length == 10) {
+    setState(() {
       isloading = true; 
     });
-    if (phoneController.text.length == 10) {
-      var response = await http.post(
-        Uri.parse('https://collegeprojectz.com/NEWPROJECT/API/LoginOTP'),
-        body: {'contact': phoneController.text},
-      );
 
-      if (response.statusCode == 200) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  OTPScreen(phoneNumber: phoneController.text)),
-        );
-      } else {
-        print('Error: ${response.body}');
-        final snackBar = SnackBar(content: Text('Error: ${response.body}'));
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      }
+    var response = await http.post(
+      Uri.parse('https://collegeprojectz.com/NEWPROJECT/API/LoginOTP'),
+      body: {'contact': phoneController.text},
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                OTPScreen(phoneNumber: phoneController.text)),
+      );
     } else {
-      final snackBar = SnackBar(content: Text('Please enter a valid number'));
+      print('Error: ${response.body}');
+      final snackBar = SnackBar(content: Text('Error: ${response.body}'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
-      setState(() {
-      isloading = true; 
-    });
+  } else {
+    final snackBar = SnackBar(content: Text('Please enter a valid number'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
+
+  setState(() {
+    isloading = false; // Stop loading when the process is done
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {

@@ -11,6 +11,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 380;
@@ -102,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 2),
               Material(
-                 color: Color.fromARGB(255, 252, 251, 251),
+                color: Color.fromARGB(255, 252, 251, 251),
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: 'Password',
@@ -127,24 +129,24 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 5),
               GestureDetector(
                 onTap: () {
-                            Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ForgotPasswordPage()));
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordPage()));
                 },
                 child: const Align(
                   alignment: Alignment.centerRight,
                   child: Text(
                     "Forgot Password?",
-                    style:
-                        TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.blue, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               const SizedBox(
                 height: 40,
               ),
-                 SizedBox(
+              SizedBox(
                 height: 30,
               ),
               SizedBox(
@@ -152,12 +154,27 @@ class _LoginPageState extends State<LoginPage> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ElevatedButton(
-                    onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Home()));
-                    },
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            setState(() {
+                              _isLoading = true; // Show loading indicator
+                            });
+                            try {
+                              // Replace with your actual API call
+                              await Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Home()),
+                              );
+                            } catch (error) {
+                              // Handle errors
+                            } finally {
+                              setState(() {
+                                _isLoading = false; // Hide loading indicator
+                              });
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       primary: Colors.orange,
                       shape: RoundedRectangleBorder(
@@ -166,10 +183,15 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       padding: EdgeInsets.symmetric(vertical: 12.0),
                     ),
-                    child: Text(
-                      "Sign In",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
+                    child: _isLoading
+                        ? CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : Text(
+                            "Sign In",
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
                   ),
                 ),
               ),

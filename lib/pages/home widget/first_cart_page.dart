@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:samvad_seva_application/model/service_item.dart';
+import 'package:samvad_seva_application/pages/home%20widget/cart_page.dart';
+import 'package:samvad_seva_application/pages/home%20widget/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FirstCartPage extends StatefulWidget {
@@ -57,8 +59,7 @@ class _FirstCartPageState extends State<FirstCartPage> {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        return responseData['messages']
-            ['status']; // Return the message from the response
+        return responseData['messages']['status'];
       }
       return "Failed to connect to the server";
     } catch (e) {
@@ -76,33 +77,44 @@ class _FirstCartPageState extends State<FirstCartPage> {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('city_id');
   }
+      Future<bool> _onWillPop() async {
+    // Navigate back to HomePage
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const Home()),
+      (Route<dynamic> route) => false,
+    );
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cart'),
-        backgroundColor: Colors.red,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+    return WillPopScope(
+       onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Cart'),
+          backgroundColor: Colors.red,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
-      ),
-      body: FutureBuilder<List<ServiceItem>>(
-        future: _loadCartItems(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (snapshot.hasData) {
-            return snapshot.data!.isEmpty
-                ? buildEmptyCart()
-                : buildCartList(snapshot.data!);
-          } else {
-            return buildEmptyCart();
-          }
-        },
+        body: FutureBuilder<List<ServiceItem>>(
+          future: _loadCartItems(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            } else if (snapshot.hasData) {
+              return snapshot.data!.isEmpty
+                  ? buildEmptyCart()
+                  : buildCartList(snapshot.data!);
+            } else {
+              return buildEmptyCart();
+            }
+          },
+        ),
       ),
     );
   }
@@ -147,9 +159,7 @@ class _FirstCartPageState extends State<FirstCartPage> {
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(message)));
                   if (!message.contains("Error")) {
-                  
-                    setState(
-                        () {}); 
+                    setState(() {});
                   }
                 },
               ),
@@ -160,6 +170,7 @@ class _FirstCartPageState extends State<FirstCartPage> {
     );
   }
 
+
   Widget buildCheckoutButton(List<ServiceItem> services) {
     int total = services.fold(0, (sum, item) => sum + int.parse(item.price));
     return SizedBox(
@@ -168,7 +179,14 @@ class _FirstCartPageState extends State<FirstCartPage> {
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(primary: Colors.red),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CartPage(services: services, totalPrice: total),
+              ),
+            );
+          },
           child: Text('CHECK OUT (Rs. $total)'),
         ),
       ),

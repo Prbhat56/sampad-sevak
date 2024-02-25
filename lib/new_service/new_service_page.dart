@@ -3,16 +3,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:samvad_seva_application/new_service/new_service_data_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:samvad_seva_application/pages/home%20widget/first_cart_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServiceListPage extends StatefulWidget {
   final List<Service> services;
-  final String subcategoryName;
+  final String catId;
 
   const ServiceListPage({
     Key? key,
     required this.services,
-    required this.subcategoryName,
+    required this.catId,
   }) : super(key: key);
 
   @override
@@ -21,30 +22,39 @@ class ServiceListPage extends StatefulWidget {
 
 class _ServiceListPageState extends State<ServiceListPage> {
   Map<String, int> serviceQuantities = {};
+  bool isLoading = false; // State variable for loading status
 
   @override
   void initState() {
     super.initState();
-
     for (var service in widget.services) {
       serviceQuantities[service.serviceId] = 1;
     }
   }
 
   Future<void> addToCart(String serviceId, int quantity) async {
-    String? userId = await getUserId(); // Assuming getUserId() is defined elsewhere
+    setState(() {
+      isLoading = true; // Set loading to true
+    });
+
+    String? userId = await getUserId();
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("User ID not found")),
       );
       return;
     }
+
     var url = Uri.parse('https://collegeprojectz.com/NEWPROJECT/API/addto_to_cart');
     var response = await http.post(url, body: {
       "user_id": userId,
       "service_id": serviceId,
-      "category_id": widget.subcategoryName, // Assuming you need to pass the name of the subcategory as the category ID
+      "category_id": widget.catId,
       "product_qty": quantity.toString(),
+    });
+
+    setState(() {
+      isLoading = false; // Set loading to false
     });
 
     if (response.statusCode == 200) {
@@ -52,13 +62,15 @@ class _ServiceListPageState extends State<ServiceListPage> {
       String message = data['messages']['status'];
       bool error = data['error'];
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+
       if (!error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to add service to cart")),
+        // Navigate to cart page on success
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => FirstCartPage()),
         );
       }
     } else {
@@ -67,13 +79,17 @@ class _ServiceListPageState extends State<ServiceListPage> {
       );
     }
   }
-    Future<String?> getUserId() async {
+
+  Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('user_id');
   }
-
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      // Show loading indicator
+      return Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -81,7 +97,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
           onPressed: () => Navigator.pop(context),
         ),
         backgroundColor: Colors.red,
-        title: Text('Search Details of ${widget.subcategoryName}'),
+        title: Text('Search Details of ${widget.catId}'),
         actions: [
           IconButton(
             icon: Icon(
@@ -141,7 +157,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
                     ),
                   ),
                      Container(
-                width: 181, 
+                width: 180, 
                 child: Row(
                   children: [
                     buildQuantitySelector(service), 

@@ -22,6 +22,14 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     super.initState();
     fetchOrders();
   }
+    Future<bool> _onWillPop() async {
+    // Navigate back to HomePage
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const Home()),
+      (Route<dynamic> route) => false,
+    );
+    return false;
+  }
 
   Future<void> fetchOrders() async {
     String? userId = await getUserId();
@@ -49,59 +57,62 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.white),
-        title: const Text('Order History'),
-        backgroundColor: Colors.red,
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : orders.isEmpty
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Image.asset(
-                      "assets/noorder.png",
-                      height: 200, // Increase the size of the image
-                      width: 200,
-                    ),
-                    const SizedBox(height: 20), 
-                    const Text(
-                      'No Orders Found',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Colors.red),
-                    ),
-                    const SizedBox(height: 40), // Add more spacing before the button
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const Home())); // This assumes your home page is the previous page in the stack.
-                      },
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.red, // Use your theme color here
-                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15), // Add some padding
-                        textStyle: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+    return WillPopScope(
+       onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: const BackButton(color: Colors.white),
+          title: const Text('Order History'),
+          backgroundColor: Colors.red,
+        ),
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : orders.isEmpty
+                ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Image.asset(
+                        "assets/noorder.png",
+                        height: 200, // Increase the size of the image
+                        width: 200,
                       ),
-                      child: const Text('Back to Home'),
-                    ),
-                  ],
-                ),
-              )
-              : ListView.builder(
-                  itemCount: orders.length,
-                  itemBuilder: (context, index) {
-                    Order order = orders[index];
-                    return const Card(
-                     
-                        );
-                  },
-                ),
+                      const SizedBox(height: 20), 
+                      const Text(
+                        'No Orders Found',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: Colors.red),
+                      ),
+                      const SizedBox(height: 40), // Add more spacing before the button
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>const Home())); // This assumes your home page is the previous page in the stack.
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary: Colors.red, // Use your theme color here
+                          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15), // Add some padding
+                          textStyle: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        child: const Text('Back to Home'),
+                      ),
+                    ],
+                  ),
+                )
+                : ListView.builder(
+                    itemCount: orders.length,
+                    itemBuilder: (context, index) {
+                      Order order = orders[index];
+                      return const Card(
+                       
+                          );
+                    },
+                  ),
+      ),
     );
   }
 }

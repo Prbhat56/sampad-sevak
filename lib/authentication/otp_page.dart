@@ -26,12 +26,14 @@ class _OTPScreenState extends State<OTPScreen> {
 
   void _verifyOTP() async {
     String otp = _controllers.map((c) => c.text).join();
-      if (otp.length < _controllers.length) { // Check if OTP is fully entered
-      setState(() {
-        showError = true; 
-      });
-      return; 
-    }
+
+ 
+  if (otp.length < _controllers.length || otp != "1234") {
+    setState(() {
+      showError = true; 
+    });
+    return; 
+  }
     var response = await http.post(
       Uri.parse('https://collegeprojectz.com/NEWPROJECT/API/VerifyOTP'),
       body: {'contact': widget.phoneNumber},
