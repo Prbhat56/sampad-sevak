@@ -178,7 +178,7 @@ class _FirstCartPageState extends State<FirstCartPage> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
-          style: ElevatedButton.styleFrom(primary: Colors.red),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           onPressed: () {
             Navigator.push(
               context,
